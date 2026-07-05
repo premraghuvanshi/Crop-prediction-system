@@ -1,6 +1,6 @@
 .env
 
-
+db_setup.py
 
 __pycache__/
 *.py[cod]

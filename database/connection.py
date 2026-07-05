@@ -3,6 +3,9 @@ from sqlalchemy.ext.asyncio import create_async_engine , async_sessionmaker
 
 DB_URL=os.getenv("DB_URL")
 
+if not DB_URL:
+    raise RuntimeError("DB_URL environment variable is not set.")
+
 engine = create_async_engine(
     DB_URL,
     pool_size=30,
@@ -14,5 +17,10 @@ engine = create_async_engine(
 AsyncSessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
 
 async def get_db():
-    with AsyncSessionLocal() as session:
-        yield session
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        
+        finally : 
+            
+            pass
