@@ -1,19 +1,20 @@
 from fastapi import FastAPI , HTTPException , Depends
+from fastapi.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 from schema.pydantic_model import LoginModel , RegisterModel
 from Authentication.user_authentication import user_register , user_login
+from Authentication.json_token import create_token , token_decoder
 from database.connection import get_db
-from fastapi.responses import JSONResponse
 from utility_func.password_hash import hash_password , verify_password
-from sqlalchemy.ext.asyncio import AsyncSession
+
+
 
 
 
 app = FastAPI()
 
-
     
    
-
 
 @app.post("/register")
 async def register(data : RegisterModel , db : AsyncSession=Depends(get_db)):
@@ -38,27 +39,34 @@ async def register(data : RegisterModel , db : AsyncSession=Depends(get_db)):
 @app.post("/login")
 async def login(data :LoginModel, db : AsyncSession = Depends(get_db)):
 
-    try :
+    DUMMY_BCRYPT_HASH = "$2b$12$KbN3r4Yf1rUas3P8q0H9O.fV8p0Kz1e0Z0Z0Z0Z0Z0Z0Z0Z0Z0Z0Z"
 
-        user_data =  await user_login(data.email , db=db)
+    user_data =  await user_login(data.email , db=db)
 
-    except Exception as e :
+    if user_data.get("status")=="failed" and "Internal database error" in user_data.get("message") :
 
-        raise HTTPException(status_code=500, detail="Database connection failed")
+        raise HTTPException(status_code=500, detail=user_data.get("message"))
+    
+    if user_data.get("status") == "success":
 
-    if user_data["status"] == "success":
+        user_metadata= user_data.get("data")
 
-        user_metadata= user_data["data"]
-
-        if verify_password(data.password,user_metadata["password"]) :
+        if verify_password(data.password,user_metadata.get("password")) :
 
             payload = {
-                "id": user_metadata["id"],
-                "email" : user_metadata["email"],
-                "district" : user_metadata["district"]
+                "id": user_metadata.get("id"),
+                "email" : user_metadata.get("email"),
+                "district" : user_metadata.get("district")
             }
 
-            return JSONResponse(status_code=200, content={"message": user_data["message"],"payload":payload})
+            access_token = create_token(payload)
+
+            return JSONResponse(status_code=200, content={"message": user_data.get("message"),"access_token":access_token})
+        
+    else: 
+        verify_password(data.password,DUMMY_BCRYPT_HASH)
+        
+    
         
     raise HTTPException(status_code=401 , detail="Invalid email or password")
 

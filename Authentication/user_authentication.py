@@ -46,6 +46,6 @@ async def user_login(email : str , db : AsyncSession) -> dict:
 
         logging.error(f"Database logging error for {email} : {e} ")
 
-        return {"status" : "failed", "message" : "internal sever error" , "data" : None}
+        return {"status" : "failed", "message" : "Internal database error" , "data" : None}
         
 
