@@ -1,11 +1,11 @@
 from fastapi import FastAPI , HTTPException , Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from schema.pydantic_model import LoginModel , RegisterModel
+from Schema.pydantic_model import LoginModel , RegisterModel
 from Authentication.user_authentication import user_register , user_login
 from Authentication.json_token import create_token , token_decoder
-from database.connection import get_db
-from utility_func.password_hash import hash_password , verify_password
+from Database.connection import get_db
+from Utility_func.password_hash import hash_password , verify_password
 
 
 
