@@ -20,3 +20,14 @@ class RegisterModel(BaseModel):
         if self.password != self.re_password:
             raise ValueError("Both new password and re enter password must be same ")
         return self
+
+
+class CropRecommendModel(BaseModel):
+    
+    N: Annotated[float, Field(...,ge=0, description='Nitrogen level in soil', examples=[90])]
+    P: Annotated[float, Field(...,ge=0, description='Phosphorus level in soil', examples=[42])]
+    K: Annotated[float, Field(...,ge=0, description='Potassium level in soil', examples=[43])]
+    temperature : Annotated[float, Field(...,ge=0, description='tempreture in Celcius', examples=[20])]
+    humidity : Annotated[float, Field(...,ge=0, description='humidity percentage', examples=[82])]
+    ph : Annotated[float, Field(...,ge=0, description='ph level of soil', examples=[6.5])]
+    rainfall : Annotated[float, Field(..., ge=0, description='Rainfall in mm', examples=[202])]

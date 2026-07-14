@@ -1,11 +1,13 @@
 from fastapi import FastAPI , HTTPException , Depends
 from fastapi.responses import JSONResponse
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
-from Schema.pydantic_model import LoginModel , RegisterModel
+from Schema.pydantic_model import LoginModel , RegisterModel , CropRecommendModel
 from Authentication.user_authentication import user_register , user_login
 from Authentication.json_token import create_token , token_decoder
 from Database.connection import get_db
 from Utility_func.password_hash import hash_password , verify_password
+from Model.prediction_function import crop_recommendation
 
 
 
@@ -69,5 +71,27 @@ async def login(data :LoginModel, db : AsyncSession = Depends(get_db)):
     
         
     raise HTTPException(status_code=401 , detail="Invalid email or password")
+
+
+@app.post("/predict/Crop_recommendation")
+async def prediction(raw_features: CropRecommendModel):
+
+    features=raw_features.model_dump()
+
+    result = await run_in_threadpool(crop_recommendation, features)
+
+    if result.get("status") == "success" :
+
+        return JSONResponse(status_code=200, content={"message":result.get("message"), "predicted_output" : result.get("data")})
+    
+    else :
+        
+        print(result.get("message"))
+
+        raise HTTPException(status_code=500 , detail=f"Internal Machine Learning Model Error")
+
+
+
+
 
 
