@@ -16,7 +16,7 @@ async def user_register(data : dict , db : AsyncSession) -> dict[str,str] :
 
     try :
         await db.execute(query , data)
-        await db.commit()
+        await db.commit() 
         
         return {"status": "success", "message":"user data inserted succesfully"}
     except Exception as e :
@@ -31,7 +31,7 @@ async def user_register(data : dict , db : AsyncSession) -> dict[str,str] :
 
 async def user_login(email : str , db : AsyncSession) -> dict:
 
-    query = text("""SELECT  `id`, `email`, `password`, `district` FROM `users` WHERE email = :email ;""")
+    query = text("""SELECT  `user_id`, `email`, `password`, `district` FROM `users` WHERE email = :email ;""")
 
     try:
         result=await db.execute(query, {"email":email})

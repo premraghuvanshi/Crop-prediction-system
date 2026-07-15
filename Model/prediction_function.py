@@ -23,14 +23,14 @@ def crop_recommendation(data : dict)-> dict:
 
         probabilities = loaded_model.predict_proba(df)
 
-        confidense = round(np.max(probabilities)*100,2)
+        confidence = round(np.max(probabilities)*100,2)
 
         return {
             "status" : "success",
             "message" : "prediction completed",
             "data" : {
                 "prediction": prediction.tolist()[0],
-                "confidence" : confidense
+                "confidence" : confidence
             }
         }
 
