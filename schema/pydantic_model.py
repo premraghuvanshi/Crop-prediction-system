@@ -31,3 +31,12 @@ class CropRecommendModel(BaseModel):
     humidity : Annotated[float, Field(...,ge=0, description='humidity percentage', examples=[82])]
     ph : Annotated[float, Field(...,ge=0, description='ph level of soil', examples=[6.5])]
     rainfall : Annotated[float, Field(..., ge=0, description='Rainfall in mm', examples=[202])]
+
+
+class PredictedOutput(BaseModel):
+    prediction : Annotated[str, Field(..., description="predicted crop")]
+    confidence : Annotated[float , Field(..., ge=0 , le=100 , description="confidence of the prediction")]
+
+class CropPredicted(BaseModel):
+    message : Annotated[str , Field(..., description="status of prediction")]
+    predicted_output : PredictedOutput

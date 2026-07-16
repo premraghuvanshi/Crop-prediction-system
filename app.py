@@ -3,15 +3,15 @@ from fastapi.responses import JSONResponse
 from fastapi.concurrency import run_in_threadpool
 from fastapi.security import HTTPBearer , HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
-from Schema.pydantic_model import LoginModel , RegisterModel , CropRecommendModel
+from Schema.pydantic_model import LoginModel , RegisterModel , CropRecommendModel , CropPredicted
 from Authentication.user_authentication import user_register , user_login
 from Authentication.json_token import create_token , token_decoder
 from Database.connection import get_db
-from Database.save_history import save_crop_recommendation
+from Database.save_history import save_crop_recommendation , fetch_history
 from Utility_func.password_hash import hash_password , verify_password
 from Model.prediction_function import crop_recommendation
 import jwt
-import json
+
 
 
 
@@ -39,21 +39,29 @@ async def get_current_user(credentials : HTTPAuthorizationCredentials = Depends(
 
 
 
+
+
+
+
 @app.post("/register")
 async def register(data : RegisterModel , db : AsyncSession=Depends(get_db)):
 
     user_data = data.model_dump(exclude=["re_password"])
 
-    user_data["password"] = hash_password(user_data["password"])
+    user_data["password"] = hash_password(user_data.get("password"))
 
 
     result =await user_register(user_data  , db=db)
 
-    if result["status"] =="success" :
+    if result.get("status") =="success" :
 
-        return JSONResponse(status_code=201, content={"message" : result["message"]})
+        return JSONResponse(status_code=201, content={"message" : result.get("message")})
     
-    raise HTTPException(status_code=400, detail=result["message"])
+    raise HTTPException(status_code=400, detail="user already exist")
+
+
+
+
 
 
 
@@ -95,7 +103,11 @@ async def login(data :LoginModel, db : AsyncSession = Depends(get_db)):
 
 
 
-@app.post("/predict/Crop_recommendation")
+
+
+
+
+@app.post("/predict/Crop_recommendation", response_model=CropPredicted)
 async def prediction(raw_features: CropRecommendModel , db : AsyncSession = Depends(get_db), current_user : dict = Depends(get_current_user)):
 
     features=raw_features.model_dump()
@@ -107,11 +119,16 @@ async def prediction(raw_features: CropRecommendModel , db : AsyncSession = Depe
 
         data = result.get("data")
 
-        json_features = json.dumps(features)
 
         history = {
         "user_id" : current_user.get("user_id"),
-        "features" : json_features,
+        "N" : features.get("N"),
+        "P" : features.get("P"),
+        "K" : features.get("K"),
+        "temperature" : features.get("temperature"),
+        "humidity" : features.get("humidity"),
+        "ph" : features.get("ph"),
+        "rainfall" : features.get("rainfall"),        
         "predicted_crop" : data.get("prediction"),
         "confidence" : data.get("confidence")
         }
@@ -126,16 +143,32 @@ async def prediction(raw_features: CropRecommendModel , db : AsyncSession = Depe
         
         else : 
             
-            raise HTTPException(status_code=500, detail=f"unable to save prediction history{result_hist.get("message")}")
+            raise HTTPException(status_code=500, detail="unable to save prediction history}")
               
     else :
 
         print(result.get("message"))
 
-        raise HTTPException(status_code=500 , detail=f"Internal Machine Learning Model Error")
+        raise HTTPException(status_code=500 , detail="Internal Machine Learning Model Error")
 
 
 
 
 
 
+
+
+
+
+@app.get("/prediction_history")
+async def prediction_history(current_user : dict = Depends(get_current_user), db : AsyncSession = Depends(get_db)):
+
+    user_id = current_user.get("user_id")
+
+    data = await fetch_history(user_id , db=db)
+
+    if data.get("status") == "success" :
+
+        return JSONResponse(status_code=200 , content={"message" : data.get("message"), "history" : data.get("data")})
+    
+    raise HTTPException(status_code=500, detail="Internal Database Error")
