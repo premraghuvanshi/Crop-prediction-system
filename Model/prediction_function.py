@@ -11,7 +11,7 @@ PROJECT_ROOT = CURRENT_DIR if (CURRENT_DIR / "app.py").exists() else CURRENT_DIR
 
 def crop_recommendation(data : dict)-> dict:
 
-    MODEL_PATH = PROJECT_ROOT / "Model" / "note_book" / "Crop_recommendation.pkl"
+    MODEL_PATH = PROJECT_ROOT / "Model" / "saved_model" / "Crop_recommendation.pkl"
 
     df=pd.DataFrame([data])
 
