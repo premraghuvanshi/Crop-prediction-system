@@ -3,13 +3,13 @@ from fastapi.responses import JSONResponse
 from fastapi.concurrency import run_in_threadpool
 from fastapi.security import HTTPBearer , HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
-from Schema.pydantic_model import LoginModel , RegisterModel , CropRecommendModel , CropPredicted
+from Schema.pydantic_model import LoginModel , RegisterModel , CropRecommendModel , CropPredicted , CropProductionModel , CropProduction
 from Authentication.user_authentication import user_register , user_login
 from Authentication.json_token import create_token , token_decoder
 from Database.connection import get_db
-from Database.save_history import save_crop_recommendation , fetch_history
+from Database.save_history import save_crop_recommendation , fetch_history , save_crop_production
 from Utility_func.password_hash import hash_password , verify_password
-from Model.prediction_function import crop_recommendation
+from Model.prediction_function import crop_recommendation , crop_production
 import jwt
 
 
@@ -108,7 +108,7 @@ async def login(data :LoginModel, db : AsyncSession = Depends(get_db)):
 
 
 @app.post("/predict/Crop_recommendation", response_model=CropPredicted)
-async def prediction(raw_features: CropRecommendModel , db : AsyncSession = Depends(get_db), current_user : dict = Depends(get_current_user)):
+async def recommendation_prediction(raw_features: CropRecommendModel , db : AsyncSession = Depends(get_db), current_user : dict = Depends(get_current_user)):
 
     features=raw_features.model_dump()
 
@@ -172,3 +172,57 @@ async def prediction_history(current_user : dict = Depends(get_current_user), db
         return JSONResponse(status_code=200 , content={"message" : data.get("message"), "history" : data.get("data")})
     
     raise HTTPException(status_code=500, detail="Internal Database Error")
+
+
+
+
+@app.post("/predict/Crop_Production" , response_model=CropProduction)
+async def production_prediction(raw_features : CropProductionModel , db : AsyncSession = Depends(get_db), current_user : dict = Depends(get_current_user)):
+
+   
+
+    features = raw_features.model_dump(exclude='Area')
+
+    result = await run_in_threadpool(crop_production , features)
+
+    if result.get("status")=="success":
+
+        data = result.get("data")
+
+        history = {
+            "user_id" : current_user.get("user_id"),
+            "district" : raw_features.District_Name,
+            "year" : raw_features.Crop_Year,
+            "season" : raw_features.Season,
+            "crop" : raw_features.Crop,
+            "area" : raw_features.Area,
+            "prediction" : (raw_features.Area)*(data.get("prediction")),
+            "production_per_hector" : data.get("prediction")
+        }
+
+        response={
+            "prediction" : (raw_features.Area)*(data.get("prediction")),
+            "production_per_hector" : data.get("prediction")
+        }
+
+        result_hist = await save_crop_production(history, db=db)
+
+        if result_hist.get("status")=="success":
+
+            return JSONResponse(status_code=200, content={ "message" : result.get("message"), "prediction_output": response })
+
+        else :
+
+            print(result_hist.get("message"))
+
+            raise HTTPException( status_code=500, detail= "unable to save prediction")
+
+    else :
+
+        print(result.get("message"))
+
+        raise HTTPException(status_code=500, detail= "Internal Machine Learning Model Error")
+
+
+
+    

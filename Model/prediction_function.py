@@ -38,4 +38,30 @@ def crop_recommendation(data : dict)-> dict:
 
         return {"status" : "failed", "message": str(e)}
     
-    
+
+def crop_production(data : dict)-> dict:
+
+    MODEL_PATH = PROJECT_ROOT / "Model" / "saved_model" / "Crop_production.pkl"
+
+    df = pd.DataFrame([data])
+
+    try :
+
+        loaded_model = joblib.load(MODEL_PATH)
+
+        prediction = loaded_model.predict(df)
+
+        
+
+        return {
+            "status" : "success",
+            "message": "prediction complete",
+            "data" : {
+                "prediction" : round(prediction.tolist()[0],1)
+                
+            }
+        }
+
+    except Exception as e :
+
+        return {"status" : "failed", "message" : str(e)}

@@ -47,5 +47,19 @@ async def fetch_history(user_id : int , db : AsyncSession) -> dict:
 
 
 
-        
-    
+async def save_crop_production(history , db : AsyncSession)-> dict :
+
+    query = text(""" INSERT INTO `crop_production_history` (`user_id`, `district`, `year`, `season`, `crop`, `area`, `prediction` , `production_per_hector`)
+                 VALUES (:user_id, :district, :year, :season, :crop, :area, :prediction, :production_per_hector);""")
+
+    try :
+
+        await db.execute(query, history)
+        await db.commit()
+        return {"status": "success", "message" : "pridiction history saved"}
+
+    except Exception as e:
+
+        return {"status" : "failed", "message" : str(e)}
+
+

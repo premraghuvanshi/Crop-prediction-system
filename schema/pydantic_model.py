@@ -1,5 +1,5 @@
-from pydantic import BaseModel , Field , EmailStr , model_validator
-from typing import Annotated
+from pydantic import BaseModel , Field , EmailStr , model_validator , field_validator
+from typing import Annotated , Literal
 
 
 class LoginModel(BaseModel):
@@ -37,6 +37,41 @@ class PredictedOutput(BaseModel):
     prediction : Annotated[str, Field(..., description="predicted crop")]
     confidence : Annotated[float , Field(..., ge=0 , le=100 , description="confidence of the prediction")]
 
+    @field_validator('prediction')
+    @classmethod
+    def transform_crop_name(cls, value):
+        return value.title()
+
 class CropPredicted(BaseModel):
     message : Annotated[str , Field(..., description="status of prediction")]
     predicted_output : PredictedOutput
+
+    
+
+class CropProductionModel(BaseModel):
+    District_Name : Annotated[str , Field(..., description="Enter your dictrict", examples=["Khargone"])]
+    Crop_Year : Annotated[int, Field(..., description="Enter the year ", examples=[2026])]
+    Season : Annotated[Literal["Whole Year", "Kharif", "Rabi"], Field(..., description="enter the season of crop", examples=["Whole Year"])]
+    Crop : Annotated[str , Field(..., description="Enter Crop ", examples=["Rice"])]
+    Area : Annotated[float, Field(..., description="Enter Area in Hectors", examples=[2.0])]
+
+    @field_validator('District_Name')
+    @classmethod
+    def transform_name(cls, value):
+        return value.title()
+    
+    @field_validator('Crop')
+    @classmethod
+    def transform_Cropname(cls, value):
+            return value.title()
+
+
+
+class ProductionOutput(BaseModel):
+    prediction : Annotated[float, Field(..., description="predicted total production in metric tonne")]
+    production_per_hector : Annotated[float, Field(..., description="predicted production per hector in metric tonne")]
+   
+
+class CropProduction(BaseModel):
+    message : Annotated[str , Field(..., description="status of prediction")]
+    predicted_output : ProductionOutput
