@@ -25,7 +25,7 @@ async def save_crop_recommendation(data : dict , db : AsyncSession) -> dict:
 
 
 
-async def fetch_history(user_id : int , db : AsyncSession) -> dict:
+async def fetch_prediction_history(user_id : int , db : AsyncSession) -> dict:
 
     query = text(""" SELECT  `N`,`P`,`K`,`temperature`,`humidity`,`ph`,`rainfall`, `predicted_crop` , `confidence` FROM `crop_recommendation_history`
                  WHERE user_id = :user_id ;
@@ -62,4 +62,22 @@ async def save_crop_production(history , db : AsyncSession)-> dict :
 
         return {"status" : "failed", "message" : str(e)}
 
+
+async def fetch_production_history(user_id , db : AsyncSession)-> dict :
+
+    query=text("""SELECT `district`, `year`, `season`, `crop` , `area` , `prediction`, `prediction_per_hector`, `time` FROM `crop_production_history` WHERE `user_id` = :user_id """)
+
+    try:
+
+        crop_prodiction_history= await db.execute(query,user_id)
+        rows = crop_prodiction_history.mappings().fetchall()
+
+        if not rows :
+            return {"status" : "success" , "message" : "user has no history", "data" : []}
+            
+        return {"status" : "success" , "message" : "data is fetch successfully", "data" : [dict(row) for row in rows]}
+        
+    except Exception as e :
+            
+            return {" status" : "failed" , "message" : str(e)}
 

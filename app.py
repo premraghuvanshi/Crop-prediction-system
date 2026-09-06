@@ -7,7 +7,7 @@ from Schema.pydantic_model import LoginModel , RegisterModel , CropRecommendMode
 from Authentication.user_authentication import user_register , user_login
 from Authentication.json_token import create_token , token_decoder
 from Database.connection import get_db
-from Database.save_history import save_crop_recommendation , fetch_history , save_crop_production
+from Database.save_history import save_crop_recommendation , fetch_prediction_history , save_crop_production , fetch_production_history
 from Utility_func.password_hash import hash_password , verify_password
 from Model.prediction_function import crop_recommendation , crop_production
 import jwt
@@ -165,13 +165,19 @@ async def prediction_history(current_user : dict = Depends(get_current_user), db
 
     user_id = current_user.get("user_id")
 
-    data = await fetch_history(user_id , db=db)
+    predicted_Crop_History = await fetch_prediction_history(user_id , db=db)
 
-    if data.get("status") == "success" :
+    production_Crop_history = await fetch_production_history(user_id, db=db)
 
-        return JSONResponse(status_code=200 , content={"message" : data.get("message"), "history" : data.get("data")})
+    if predicted_Crop_History.get("status") == "success"  and production_Crop_history.get("status")=="success":
+
+        return JSONResponse(status_code=200 , content={"message" : predicted_Crop_History.get("message"), "Crop Prediction History" : predicted_Crop_History.get("data"), "Crop Production History" : production_Crop_history.get("data")})
     
     raise HTTPException(status_code=500, detail="Internal Database Error")
+
+
+
+
 
 
 
