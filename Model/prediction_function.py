@@ -57,7 +57,7 @@ def crop_production(data : dict)-> dict:
             "status" : "success",
             "message": "prediction complete",
             "data" : {
-                "prediction" : round(prediction.tolist()[0],1)
+                "prediction" : round(prediction.tolist()[0],2)
                 
             }
         }
