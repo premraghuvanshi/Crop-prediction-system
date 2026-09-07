@@ -53,7 +53,7 @@ class CropProductionModel(BaseModel):
     Crop_Year : Annotated[int, Field(..., description="Enter the year ", examples=[2026])]
     Season : Annotated[Literal["Whole Year", "Kharif", "Rabi"], Field(..., description="enter the season of crop", examples=["Whole Year"])]
     Crop : Annotated[str , Field(..., description="Enter Crop ", examples=["Rice"])]
-    Area : Annotated[float, Field(..., description="Enter Area in Hectors", examples=[2.0])]
+    Area : Annotated[float, Field(..., description="Enter Area in Hectares", examples=[2.0])]
 
     @field_validator('District_Name')
     @classmethod
@@ -69,7 +69,7 @@ class CropProductionModel(BaseModel):
 
 class ProductionOutput(BaseModel):
     prediction : Annotated[float, Field(..., description="predicted total production in metric tonne")]
-    production_per_hector : Annotated[float, Field(..., description="predicted production per hector in metric tonne")]
+    production_per_hectare : Annotated[float, Field(..., description="predicted production per hectare in metric tonne")]
    
 
 class CropProduction(BaseModel):

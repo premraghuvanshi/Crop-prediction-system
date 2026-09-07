@@ -160,19 +160,21 @@ async def recommendation_prediction(raw_features: CropRecommendModel , db : Asyn
 
 
 
-@app.get("/prediction_history")
-async def prediction_history(current_user : dict = Depends(get_current_user), db : AsyncSession = Depends(get_db)):
+@app.get("/prediction__history/Crop_recommendation")
+async def Crop_Recommendation_History(current_user : dict = Depends(get_current_user), db : AsyncSession = Depends(get_db)):
 
     user_id = current_user.get("user_id")
 
     predicted_Crop_History = await fetch_prediction_history(user_id , db=db)
 
-    production_Crop_history = await fetch_production_history(user_id, db=db)
-
-    if predicted_Crop_History.get("status") == "success"  and production_Crop_history.get("status")=="success":
-
-        return JSONResponse(status_code=200 , content={"message" : predicted_Crop_History.get("message"), "Crop Prediction History" : predicted_Crop_History.get("data"), "Crop Production History" : production_Crop_history.get("data")})
     
+
+    if predicted_Crop_History.get("status") == "success":
+
+        return JSONResponse(status_code=200 , content={"message" : predicted_Crop_History.get("message"), "Crop Prediction History" : predicted_Crop_History.get("data"),})
+
+    print(predicted_Crop_History.get("message"))
+
     raise HTTPException(status_code=500, detail="Internal Database Error")
 
 
@@ -203,12 +205,12 @@ async def production_prediction(raw_features : CropProductionModel , db : AsyncS
             "crop" : raw_features.Crop,
             "area" : raw_features.Area,
             "prediction" : (raw_features.Area)*(data.get("prediction")),
-            "production_per_hector" : data.get("prediction")
+            "production_per_hectare" : data.get("prediction")
         }
 
         response={
             "prediction" : (raw_features.Area)*(data.get("prediction")),
-            "production_per_hector" : data.get("prediction")
+            "production_per_hectare" : data.get("prediction")
         }
 
         result_hist = await save_crop_production(history, db=db)
@@ -231,4 +233,18 @@ async def production_prediction(raw_features : CropProductionModel , db : AsyncS
 
 
 
-    
+
+@app.get("/prediction__history/Crop_Production")
+async def Crop_Production_History(current_user : dict = Depends(get_current_user), db : AsyncSession=Depends(get_db)) :
+
+    user_id = current_user.get("user_id")
+
+    result = await fetch_production_history(user_id, db=db)
+
+    if result.get("status")=="success" :
+
+        return JSONResponse(status_code=200, content={"message": result.get("message"),"Crop Production History": result.get("data")})
+
+    print(result.get("message"))
+
+    raise HTTPException(status_code=500 , detail=result.get("message"))
