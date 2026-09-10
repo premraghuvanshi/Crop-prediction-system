@@ -64,4 +64,4 @@ def crop_production(data : dict)-> dict:
 
     except Exception as e :
 
-        return {"status" : "failed", "message" : str(e)}
+        return {"status" : "failed", "messag" : str(e)}
