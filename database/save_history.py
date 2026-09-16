@@ -105,3 +105,28 @@ async def fetch_production_history(user_id , db : AsyncSession)-> dict :
             
             return {" status" : "failed" , "message" : str(e)}
 
+
+
+async def fetch_user_profile(user_id, db : AsyncSession) -> dict:
+
+    query=text(""" SELECT `name` , `email`, `district`, `land_in_hectares` from `users` WHERE `user_id` = :user_id """)
+
+    try :
+
+        user_data = await db.execute(query, {"user_id" :user_id})
+
+        user_profile = dict(user_data.mappings().fetchone())
+
+        user_profile["land_in_hectares"] = float(user_profile.get("land_in_hectaresJ"))
+
+        
+
+        return {"status" : "success" , "message" : "profile is successfully fetched", "data":user_profile}
+
+    except Exception as e :
+
+        return  {"status" : "failed" , "message" : str(e)}
+
+    
+
+

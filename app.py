@@ -7,7 +7,7 @@ from Schema.pydantic_model import LoginModel , RegisterModel , CropRecommendMode
 from Authentication.user_authentication import user_register , user_login
 from Authentication.json_token import create_token , token_decoder
 from Database.connection import get_db
-from Database.save_history import save_crop_recommendation , fetch_prediction_history , save_crop_production , fetch_production_history
+from Database.save_history import save_crop_recommendation , fetch_prediction_history , save_crop_production , fetch_production_history , fetch_user_profile
 from Utility_func.password_hash import hash_password , verify_password
 from Model.prediction_function import crop_recommendation , crop_production
 import jwt

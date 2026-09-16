@@ -10,7 +10,7 @@ import logging
 async def user_register(data : dict , db : AsyncSession) -> dict[str,str] :
     
     query = text("""
-    INSERT INTO `users` (`name`, `email`, `district`, `land_in_hectors`, `password`)
+    INSERT INTO `users` (`name`, `email`, `district`, `land_in_hectares`, `password`)
     VALUES (:name, :email, :district, :land_in_hectors, :password);
     """)
 
