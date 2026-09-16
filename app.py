@@ -247,4 +247,24 @@ async def Crop_Production_History(current_user : dict = Depends(get_current_user
 
     print(result.get("message"))
 
-    raise HTTPException(status_code=500 , detail=result.get("message"))
+    raise HTTPException(status_code=500 , detail="Internal Server Error")
+
+
+
+@app.get("/view_profile")
+async def view_profile(current_user : dict=Depends(get_current_user), db : AsyncSession=Depends(get_db)):
+
+    user_id = current_user.get("user_id")
+
+    result = await fetch_user_profile(user_id,db=db)
+
+    if result.get("status")=="success":
+
+        return JSONResponse(status_code=200, content={"message": result.get("message"), "user_data" : result.get("data")})
+
+    print(result.get("message"))
+
+    raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+
+    
