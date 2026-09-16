@@ -125,6 +125,24 @@ async def fetch_user_profile(user_id, db : AsyncSession) -> dict:
 
         return  {"status" : "failed" , "message" : str(e)}
 
+
+async def edit_user_profile( new_data, db:AsyncSession)-> dict:
+
+    query = text("""  UPDATE `users` SET `name` = :name , `district` = :district, `land_in_hectares`= :land_in_hectares WHERE `user_id` = :user_id
+            """)
+
+    try:
+
+        await db.execute(query, new_data)
+
+        await db.commit()
+
+        return {"status" : "success", "message": "New Profile Saved"}
+
+    except Exception as e :
+
+        return {"status" : "failed", "message": str(e)}
+
     
 
 
