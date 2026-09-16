@@ -119,8 +119,6 @@ async def fetch_user_profile(user_id, db : AsyncSession) -> dict:
 
         user_profile["land_in_hectares"] = float(user_profile.get("land_in_hectaresJ"))
 
-        
-
         return {"status" : "success" , "message" : "profile is successfully fetched", "data":user_profile}
 
     except Exception as e :

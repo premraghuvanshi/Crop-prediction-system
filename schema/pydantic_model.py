@@ -75,3 +75,8 @@ class ProductionOutput(BaseModel):
 class CropProduction(BaseModel):
     message : Annotated[str , Field(..., description="status of prediction")]
     predicted_output : ProductionOutput
+
+class EditProfileModel(BaseModel):
+    name : Annotated[str,Field(..., description="enter user's name",examples=["John"])]
+    district :  Annotated[str,Field(..., description="enter user's city",examples=["Mumbai"])]
+    land_in_hectors:  Annotated[float,Field(..., description="enter lands in hectors",examples=["12.44"])]

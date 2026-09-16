@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.concurrency import run_in_threadpool
 from fastapi.security import HTTPBearer , HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
-from Schema.pydantic_model import LoginModel , RegisterModel , CropRecommendModel , CropPredicted , CropProductionModel , CropProduction
+from Schema.pydantic_model import LoginModel , RegisterModel , CropRecommendModel , CropPredicted , CropProductionModel , CropProduction , EditProfileModel
 from Authentication.user_authentication import user_register , user_login
 from Authentication.json_token import create_token , token_decoder
 from Database.connection import get_db
@@ -268,3 +268,31 @@ async def view_profile(current_user : dict=Depends(get_current_user), db : Async
     
 
     
+
+@app.put("/edit_profile")
+async def edit_profile(user_data_raw : EditProfileModel ,current_user : dict=Depends(get_current_user),  db : AsyncSession=Depends(get_db)):
+    user_id = current_user.get("user_id")
+
+    user_data = user_data_raw.model_dump()
+
+    new_data = {
+        "name" : user_data.get("name"),
+        "district" : user_data.get("district"),
+        "land_in_hectares" : user_data.get("land_in_hectare")
+        }
+
+    result = await edit_user_profile(user_id, new_data, db=db)
+
+    if result.get("status")=="success":
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "message" : result.get("message")
+                }
+            )
+    print(result.get("message"))
+    raise HTTPException(status_code=500, detail="Internal Server Error")
+                                 
+                        
+                       
